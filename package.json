@@ -1,0 +1,32 @@
+{
+  "name": "pinboard-updater",
+  "version": "0.1.0",
+  "description": "Updates Pinboard bookmarks metadata",
+  "engines": {
+    "node": ">= 12.13 <13"
+  },
+  "main": "src/pinboard-updater",
+  "devDependencies": {
+    "eslint": "6.8.0",
+    "eslint-plugin-jest": "23.7.0",
+    "jest": "25.1.0",
+    "rimraf": "3.0.2"
+  },
+  "scripts": {
+    "clean": "rimraf coverage build tmp",
+    "lint": "eslint src/pinboard-updater",
+    "test": "jest --coverage --passWithNoTests",
+    "test:watch": "jest --watch"
+  },
+  "author": "Joe Gornick <joe@joegornick.com>",
+  "license": "See LICENSE",
+  "dependencies": {
+    "html-metadata": "1.7.1",
+    "lodash": "4.17.15",
+    "node-fetch": "2.6.0",
+    "query-string": "6.12.1",
+    "tslib": "1.10.0",
+    "xml-js": "1.6.11",
+    "yargs": "15.3.1"
+  }
+}

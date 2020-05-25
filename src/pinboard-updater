@@ -4,12 +4,13 @@ const fs = require('fs')
 const path = require('path')
 const fetch = require('node-fetch')
 const convert = require('xml-js')
-const { map } = require('lodash')
+const { map, filter } = require('lodash')
 const { loadFromString } = require('html-metadata')
+const compareAsc = require('date-fns/compareAsc')
 
 const queryString = require('query-string')
 
-const { PINBOARD_API_KEY } = process.env
+const { PINBOARD_API_KEY, PINBOARD_LAST_DATE } = process.env
 
 async function getBookmarks () {
   const response = await fetch(`https://api.pinboard.in/v1/posts/all?auth_token=${PINBOARD_API_KEY}`)
@@ -54,8 +55,13 @@ async function updateBookmark (bookmark) {
   await fetch(`https://api.pinboard.in/v1/posts/add?${qs}`)
 }
 
+function filterBookmarksAfterDate (bookmarks, date) {
+  return filter(bookmarks, (bookmark) => compareAsc(new Date(bookmark.time), date) >= 0)
+}
+
 async function main () {
-  const bookmarks = await getBookmarks()
+  const bookmarks = filterBookmarksAfterDate(await getBookmarks(), new Date(PINBOARD_LAST_DATE || 0))
+
   const notFoundBookmarks = []
 
   let bookmark

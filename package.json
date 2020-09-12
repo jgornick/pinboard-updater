@@ -24,7 +24,7 @@
     "date-fns": "2.14.0",
     "html-metadata": "1.7.1",
     "lodash": "4.17.15",
-    "node-fetch": "2.6.0",
+    "node-fetch": "2.6.1",
     "query-string": "6.12.1",
     "tslib": "1.10.0",
     "xml-js": "1.6.11",

@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 
-const fs = require('fs')
-const path = require('path')
+require('dotenv/config')
+const debug = require('debug')('pinboard-updater')
+
 const fetch = require('node-fetch')
 const convert = require('xml-js')
 const { map, filter } = require('lodash')
 const { loadFromString } = require('html-metadata')
 const compareAsc = require('date-fns/compareAsc')
-
 const queryString = require('query-string')
+const { Logger } = require('tslog')
 
-const { PINBOARD_API_KEY, PINBOARD_LAST_DATE } = process.env
+const { PINBOARD_API_KEY, PINBOARD_LAST_DATE, LOG_LEVEL } = process.env
+
+const log = new Logger({ minLevel: LOG_LEVEL || 'info' })
+
+debug('PINBOARD_API_KEY', PINBOARD_API_KEY)
+debug('PINBOARD_LAST_DATE', PINBOARD_LAST_DATE)
 
 async function getBookmarks () {
   const response = await fetch(`https://api.pinboard.in/v1/posts/all?auth_token=${PINBOARD_API_KEY}`)
@@ -60,31 +66,39 @@ function filterBookmarksAfterDate (bookmarks, date) {
 }
 
 async function main () {
-  const bookmarks = filterBookmarksAfterDate(await getBookmarks(), new Date(PINBOARD_LAST_DATE || 0))
+  const bookmarks = filterBookmarksAfterDate(
+    await getBookmarks(),
+    new Date(PINBOARD_LAST_DATE || 0)
+  )
 
-  const notFoundBookmarks = []
+  debug('bookmarks to update', bookmarks.length)
 
   let bookmark
 
   for (bookmark of bookmarks) {
     try {
-      bookmark = await scrapeBookmark(bookmark)
-      await updateBookmark(bookmark)
+      try {
+        debug('scraping bookmark', bookmark.href)
+        bookmark = await scrapeBookmark(bookmark)
+      } catch (e) {
+        log.error('Error while scraping bookmark', bookmark.href, e)
+        throw e
+      }
+
+      try {
+        debug('updating bookmark', bookmark.href)
+        await updateBookmark(bookmark)
+      } catch (e) {
+        log.error('Error while updating bookmark', bookmark.href, e)
+        throw e
+      }
+
       await new Promise((resolve) => setTimeout(resolve, 100))
     } catch (e) {
-      notFoundBookmarks.push({
-        ...bookmark,
-        error: e.message,
-      })
+      // noop
     }
   }
-
-  fs.writeFileSync(
-    path.join(process.cwd(), 'not-found-bookmarks.json'),
-    JSON.stringify(notFoundBookmarks, null, '  ')
-  )
 }
-
 
 (async function() {
   await main()

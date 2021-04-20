@@ -1,12 +1,16 @@
 {
   "name": "pinboard-updater",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Updates Pinboard bookmarks metadata",
   "engines": {
     "node": ">= 12.13 <13"
   },
+  "resolutions": {
+    "lodash": "4.17.21"
+  },
   "main": "src/pinboard-updater",
   "devDependencies": {
+    "@yarnpkg/pnpify": "2.4.0",
     "eslint": "6.8.0",
     "eslint-plugin-jest": "23.7.0",
     "jest": "25.1.0",
@@ -15,19 +19,22 @@
   "scripts": {
     "clean": "rimraf coverage build tmp",
     "lint": "eslint src/pinboard-updater",
+    "pnpify": "pnpify --sdk vscode",
+    "postinstall": "yarn pnpify",
     "test": "jest --coverage --passWithNoTests",
     "test:watch": "jest --watch"
   },
   "author": "Joe Gornick <joe@joegornick.com>",
   "license": "See LICENSE",
   "dependencies": {
-    "date-fns": "2.14.0",
+    "date-fns": "2.21.1",
+    "debug": "4.3.1",
+    "dotenv": "8.2.0",
     "html-metadata": "1.7.1",
-    "lodash": "4.17.15",
-    "node-fetch": "2.6.0",
+    "lodash": "4.17.21",
+    "node-fetch": "2.6.1",
     "query-string": "6.12.1",
-    "tslib": "1.10.0",
-    "xml-js": "1.6.11",
-    "yargs": "15.3.1"
+    "tslog": "3.2.0",
+    "xml-js": "1.6.11"
   }
 }

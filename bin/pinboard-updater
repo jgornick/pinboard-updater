@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+require('dotenv/config')
+
+const { log } = require('../src/logger')
+const { update } = require('../src/update')
+
+const { PINBOARD_API_KEY, PINBOARD_LAST_DATE } = process.env
+
+log.debug('PINBOARD_API_KEY', PINBOARD_API_KEY)
+log.debug('PINBOARD_LAST_DATE', PINBOARD_LAST_DATE)
+
+async function main () {
+  update(PINBOARD_LAST_DATE)
+}
+
+(async function() {
+  await main()
+}());

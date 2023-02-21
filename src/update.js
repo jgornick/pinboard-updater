@@ -1,22 +1,13 @@
-#!/usr/bin/env node
-
-require('dotenv/config')
-const debug = require('debug')('pinboard-updater')
-
 const fetch = require('node-fetch')
 const convert = require('xml-js')
 const { map, filter } = require('lodash')
 const { loadFromString } = require('html-metadata')
 const compareAsc = require('date-fns/compareAsc')
 const queryString = require('query-string')
-const { Logger } = require('tslog')
 
-const { PINBOARD_API_KEY, PINBOARD_LAST_DATE, LOG_LEVEL } = process.env
+const { log } = require('./logger')
 
-const log = new Logger({ minLevel: LOG_LEVEL || 'info' })
-
-debug('PINBOARD_API_KEY', PINBOARD_API_KEY)
-debug('PINBOARD_LAST_DATE', PINBOARD_LAST_DATE)
+const { PINBOARD_API_KEY } = process.env
 
 async function getBookmarks () {
   const response = await fetch(`https://api.pinboard.in/v1/posts/all?auth_token=${PINBOARD_API_KEY}`)
@@ -28,7 +19,11 @@ async function getBookmarks () {
 }
 
 async function scrapeBookmark (bookmark) {
-  const response = await fetch(bookmark.href)
+  const response = await fetch(bookmark.href, {
+    headers: {
+      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/5332 (KHTML, like Gecko) Chrome/40.0.880.0 Mobile Safari/5332'
+    }
+  })
   const html = await response.text()
 
   const metadata = await loadFromString(html)
@@ -65,20 +60,20 @@ function filterBookmarksAfterDate (bookmarks, date) {
   return filter(bookmarks, (bookmark) => compareAsc(new Date(bookmark.time), date) >= 0)
 }
 
-async function main () {
+async function update (lastDate = 0) {
   const bookmarks = filterBookmarksAfterDate(
     await getBookmarks(),
-    new Date(PINBOARD_LAST_DATE || 0)
+    new Date(lastDate)
   )
 
-  debug('bookmarks to update', bookmarks.length)
+  log.debug('bookmarks to update', bookmarks.length)
 
   let bookmark
 
   for (bookmark of bookmarks) {
     try {
       try {
-        debug('scraping bookmark', bookmark.href)
+        log.debug('scraping bookmark', bookmark.href)
         bookmark = await scrapeBookmark(bookmark)
       } catch (e) {
         log.error('Error while scraping bookmark', bookmark.href, e)
@@ -86,7 +81,7 @@ async function main () {
       }
 
       try {
-        debug('updating bookmark', bookmark.href)
+        log.debug('updating bookmark', bookmark.href)
         await updateBookmark(bookmark)
       } catch (e) {
         log.error('Error while updating bookmark', bookmark.href, e)
@@ -100,6 +95,6 @@ async function main () {
   }
 }
 
-(async function() {
-  await main()
-}());
+module.exports = {
+  update,
+}

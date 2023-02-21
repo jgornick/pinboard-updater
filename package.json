@@ -1,6 +1,6 @@
 {
   "name": "pinboard-updater",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Updates Pinboard bookmarks metadata",
   "engines": {
     "node": ">= 12.13 <13"
@@ -8,7 +8,7 @@
   "resolutions": {
     "lodash": "4.17.21"
   },
-  "main": "src/pinboard-updater",
+  "main": "src/http-function.js",
   "devDependencies": {
     "@yarnpkg/pnpify": "2.4.0",
     "eslint": "6.8.0",
@@ -20,7 +20,6 @@
     "clean": "rimraf coverage build tmp",
     "lint": "eslint src/pinboard-updater",
     "pnpify": "pnpify --sdk vscode",
-    "postinstall": "yarn pnpify",
     "test": "jest --coverage --passWithNoTests",
     "test:watch": "jest --watch"
   },
